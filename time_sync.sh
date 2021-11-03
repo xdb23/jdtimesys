@@ -1,6 +1,6 @@
 #!/bin/bash
 ## Author: SuperManito
-## Modified: 2021-10-17
+## Modified: 2021-09-30
 
 ## 定义允许的误差时间，单位毫秒
 case $# in
@@ -25,10 +25,20 @@ case $# in
 esac
 
 ## 环境判定
-
+function Check() {
+    if [ "$(curl -I -s --connect-timeout 5 https://bean.m.jd.com/bean/signIndex.action -w %{http_code} | tail -n1)" -ne "302" ]; then
+        echo -e "\n\033[31m ----- 无法连接至京东服务器，请检查你的网络环境 ----- \033[0m\n"
+        exit 1
+    fi
+    if [ "$(cat /etc/os-release | grep "^ID" | awk -F '=' '{print$NF}')" = "alpine" ]; then
+        echo -e "\n\033[31m ----- 请到主机环境执行 ----- \033[0m\n"
+        exit 1
+    fi
+}
 
 function Main() {
-       local Interface="https://api.m.jd.com/client.action?functionId=queryMaterialProducts&client=wh5"
+    Check
+    local Interface="https://api.m.jd.com/client.action?functionId=queryMaterialProducts&client=wh5"
     if [[ $(echo $(($(curl -sSL "${Interface}" | awk -F '\"' '{print$8}') - $(eval echo "$(date +%s)$(date +%N | cut -c1-3)"))) | sed "s|\-||g") -lt 10 ]]; then
         echo -e "\n\033[32m------------ 检测到当前本地时间与京东服务器的时间差小于 10ms 因此不同步 ------------\033[0m\n"
     else
