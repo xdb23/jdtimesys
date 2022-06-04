@@ -5,7 +5,7 @@
 ## 定义允许的误差时间，单位毫秒
 case $# in
 0)
-    TimeError=80
+    TimeError=1
     ;;
 1)
     case $1 in
